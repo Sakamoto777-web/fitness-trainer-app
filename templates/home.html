@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康管理アプリ - ホーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        /* ナビゲーション */
+        .nav {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-links {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: #f8f9fa;
+        }
+
+        /* メインコンテンツ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* 公開体重データ */
+        .public-data-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #2c3e50;
+            font-size: 2rem;
+        }
+
+        .weight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .weight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .weight-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .student-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .current-weight {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .weight-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .progress-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .target-status {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .target-status.losing {
+            color: #e74c3c;
+        }
+
+        .target-status.gaining {
+            color: #3498db;
+        }
+
+        .target-status.achieved {
+            color: #27ae60;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .chart-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .chart-link:hover {
+            background: #5a6fd8;
+        }
+
+        /* アクションカード */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .action-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .action-description {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-button.secondary {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        }
+
+        /* メッセージ */
+        .no-data-message {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .no-data-message h3 {
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .weight-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏥 健康管理アプリ</h1>
+        <p>パーソナルトレーニングをサポートするヘルスケアプラットフォーム</p>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-links">
+            {% if 'student_id' in session %}
+                <span>こんにちは、{{ nickname_to_display }}さん！</span>
+                <a href="{{ url_for('dashboard_page') }}" class="nav-link">📊 ダッシュボード</a>
+                <a href="{{ url_for('logout_user') }}" class="nav-link">🚪 ログアウト</a>
+            {% elif 'trainer_id' in session %}
+                <span>こんにちは、{{ session.trainer_name }}トレーナー！</span>
+                <a href="{{ url_for('trainer_dashboard_page') }}" class="nav-link">👨‍⚕️ トレーナーダッシュボード</a>
+                <a href="{{ url_for('trainer_logout') }}" class="nav-link">🚪 ログアウト</a>
+            {% else %}
+                <a href="{{ url_for('login_page') }}" class="nav-link">🔑 生徒ログイン</a>
+                <a href="{{ url_for('register_page') }}" class="nav-link">📝 生徒新規登録</a>
+                <a href="{{ url_for('trainer_login_page') }}" class="nav-link">👨‍⚕️ トレーナーログイン</a>
+                <a href="{{ url_for('trainer_register_page') }}" class="nav-link">👨‍⚕️ トレーナー登録</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 公開体重データセクション -->
+        <div class="public-data-section">
+            <h2 class="section-title">📈 みんなの健康管理状況</h2>
+            
+            {% if public_weight_data %}
+                <div class="weight-grid">
+                    {% for data in public_weight_data %}
+                    <div class="weight-card">
+                        <div class="card-header">
+                            <div class="student-name">{{ data.nickname }}さん</div>
+                            <div class="current-weight">{{ "%.1f"|format(data.weight) }}kg</div>
+                        </div>
+
+                        <div class="weight-info">
+                            <div class="info-item">
+                                <div class="info-value">{{ data.days_since_start }}日</div>
+                                <div class="info-label">継続日数</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-value">
+                                    {% if data.weight_lost >= 0 %}
+                                        -{{ "%.1f"|format(data.weight_lost) }}kg
+                                    {% else %}
+                                        +{{ "%.1f"|format(data.weight_lost|abs) }}kg
+                                    {% endif %}
+                                </div>
+                                <div class="info-label">体重変化</div>
+                            </div>
+                        </div>
+
+                        {% if data.target_weight %}
+                        <div class="progress-info">
+                            <div class="target-status {{ data.target_status }}">
+                                {{ data.target_info }}
+                            </div>
+                            {% if data.progress_percentage > 0 %}
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ data.progress_percentage }}%"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div style="text-align: center; margin-top: 1rem;">
+                            <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">
+                                最終更新: {{ data.log_date }}
+                            </div>
+                            <a href="{{ url_for('embed_weight_chart', student_id=data.student_id) }}" 
+                               class="chart-link" target="_blank">
+                                📊 グラフを見る
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-data-message">
+                    <h3>👥 まだ公開データがありません</h3>
+                    <p>生徒さんが体重公開設定を有効にすると、ここに健康管理の状況が表示されます。</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- アクションカード -->
+        <div class="action-cards">
+            <div class="action-card">
+                <div class="action-icon">👥</div>
+                <div class="action-title">生徒の方</div>
+                <div class="action-description">
+                    体重、食事、排泄記録を簡単に管理。<br>
+                    トレーナーと連携して健康目標を達成しましょう。
+                </div>
+                {% if not 'student_id' in session %}
+                    <a href="{{ url_for('login_page') }}" class="action-button">🔑 ログイン</a>
+                    <a href="{{ url_for('register_page') }}" class="action-button">📝 新規登録</a>
+                {% else %}
+                    <a href="{{ url_for('dashboard_page') }}" class="action-button">📊 ダッシュボードへ</a>
+                {% endif %}
+            </div>
+
+            <div class="action-card">
+                <div class="action-icon">👨‍⚕️</div>
+                <div class="action-title">トレーナーの方</div>
+                <div class="action-description">
+                    生徒の健康データをリアルタイムで確認。<br>
+                    効果的な指導とサポートを提供できます。
+                </div>
+                {% if not 'trainer_id' in session %}
+                    <a href="{{ url_for('trainer_login_page') }}" class="action-button secondary">🔑 ログイン</a>
+                    <a href="{{ url_for('trainer_register_page') }}" class="action-button secondary">📝 新規登録</a>
+                {% else %}
+                    <a href="{{ url_for('trainer_dashboard_page') }}" class="action-button secondary">👨‍⚕️ ダッシュボードへ</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

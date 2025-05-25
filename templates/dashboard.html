@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダッシュボード - {{ nickname_to_display }}さん</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* ナビゲーション */
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: 80px;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-tab.active {
+            background-color: #f8f9fa;
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .nav-tab:hover {
+            background-color: #f8f9fa;
+        }
+
+        .nav-tab.has-unread::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* メインコンテンツ */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* カード */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .card h3 {
+            color: #495057;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* フォーム */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* ボタン */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            width: auto;
+            margin: 0 0.25rem;
+        }
+
+        /* アラート */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        /* 記録リスト */
+        .log-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .log-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-item-date {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .log-item-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        /* 統計カード */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        /* 日付選択 */
+        .date-selector {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .date-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .date-nav button:hover {
+            background: #5a6fd8;
+            transform: scale(1.1);
+        }
+
+        .current-date {
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .date-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .date-picker {
+            padding: 0.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            flex: 1;
+        }
+
+        .date-picker:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .today-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .today-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        /* 食事タイプ選択 */
+        .meal-type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .meal-type-btn {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .meal-type-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .meal-type-btn:hover {
+            border-color: #667eea;
+        }
+
+        .meal-textarea {
+            min-height: 100px;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        /* ラジオボタンスタイル */
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 0.5rem;
+        }
+
+        .radio-label input[type="radio"] {
+            margin: 0;
+        }
+
+        /* メッセージタブ用のスタイル */
+        .message-status-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .message-status-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .message-status-text {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .message-quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .message-quick-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .message-quick-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* 設定タブ用のスタイル */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .target-progress {
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #e7f3ff;
+            border-radius: 8px;
+        }
+
+        /* 今日の合計カロリー表示 */
+        .daily-summary {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .daily-total-calories {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        /* 食事タイプラベルの動的更新 */
+        #meal-type-label {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .date-controls {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .date-picker {
+                width: 100%;
+            }
+
+            .meal-type-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .message-quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ nickname_to_display }}さんのダッシュボード</h1>
+        <div class="header-info">健康管理を続けましょう！</div>
+    </div>
+
+    <!-- フラッシュメッセージ -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- タブナビゲーション -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('record')">📝 記録</button>
+        <button class="nav-tab" onclick="showTab('weight')">📊 体重</button>
+        <button class="nav-tab" onclick="showTab('meal')">🍽️ 食事</button>
+        <button class="nav-tab" id="messagesTab" onclick="showTab('messages')">💬 メッセージ</button>
+        <button class="nav-tab" onclick="showTab('settings')">⚙️ 設定</button>
+    </div>
+
+    <div class="container">
+        <!-- 日付選択 -->
+        <div class="date-selector">
+            <div class="date-nav">
+                <button onclick="changeDate(-1)">←</button>
+                <div class="current-date" id="currentDate">{{ default_date.strftime('%Y年%m月%d日') }}</div>
+                <button onclick="changeDate(1)">→</button>
+            </div>
+            <div class="date-controls">
+                <input type="date" class="date-picker" id="datePicker" value="{{ default_date.isoformat() }}" onchange="goToDate(this.value)">
+                <button class="today-btn" onclick="goToToday()">📅 今日</button>
+            </div>
+        </div>
+
+        <!-- 記録タブ -->
+        <div id="record" class="tab-content active">
+            <!-- 統計カード -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">{{ daily_summary_logs.weight|length }}</span>
+                    <div class="stat-label">体重記録</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ daily_summary_logs.meal|length }}</span>
+                    <div class="stat-label">食事記録</div>
+                </div>
+            </div>
+
+            <!-- 統合フォーム -->
+            <form id="mainForm" method="POST">
+                <!-- 体重記録 -->
+                <div class="card">
+                    <h3>⚖️ 体重記録</h3>
+                    <input type="hidden" name="weight_date" id="weight_date" value="{{ default_date.isoformat() }}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight_kg">体重 (kg)</label>
+                            <input type="number" step="0.1" class="form-control" id="weight_kg" name="weight_kg" placeholder="60.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="body_fat_percentage">体脂肪率 (%)</label>
+                            <input type="number" step="0.1" class="form-control" id="body_fat_percentage" name="body_fat_percentage" placeholder="20.5">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 排泄記録 -->
+                <div class="card">
+                    <h3>🚽 排泄記録</h3>
+                    <input type="hidden" name="bowel_date" id="bowel_date" value="{{ default_date.isoformat() }}">
+                    <div class="form-group">
+                        <label>今日は排泄がありましたか？</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="bowel_occurred" value="true">
+                                あり
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="bowel_occurred" value="false">
+                                なし
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 食事記録 -->
+                <div class="card">
+                    <h3>🍽️ 食事記録</h3>
+                    <input type="hidden" name="meal_date" id="meal_date" value="{{ default_date.isoformat() }}">
+                    
+                    <div class="form-group">
+                        <label>食事タイプ</label>
+                        <div class="meal-type-grid">
+                            <button type="button" class="meal-type-btn" data-type="morning" onclick="selectMealType('morning')">🌅 朝食</button>
+                            <button type="button" class="meal-type-btn" data-type="lunch" onclick="selectMealType('lunch')">🌞 昼食</button>
+                            <button type="button" class="meal-type-btn" data-type="dinner" onclick="selectMealType('dinner')">🌙 夕食</button>
+                            <button type="button" class="meal-type-btn" data-type="snack1" onclick="selectMealType('snack1')">🍪 間食1</button>
+                            <button type="button" class="meal-type-btn" data-type="snack2" onclick="selectMealType('snack2')">🍎 間食2</button>
+                            <button type="button" class="meal-type-btn" data-type="snack3" onclick="selectMealType('snack3')">🥨 間食3</button>
+                        </div>
+                        <input type="hidden" name="meal_type" id="meal_type">
+                    </div>
+
+                    <!-- 食事内容入力 -->
+                    <div class="form-group">
+                        <label for="meal_description">食事内容</label>
+                        <textarea class="form-control meal-textarea" id="meal_description" name="meal_description" rows="3" placeholder="食べたものを記録してください&#10;例：鶏むね肉のグリル、ブロッコリー、玄米"></textarea>
+                    </div>
+
+                    <!-- カロリー入力 -->
+                    <div class="form-group">
+                        <label for="total_calories">
+                            <span id="meal-type-label">朝食</span>の合計カロリー
+                        </label>
+                        <input type="number" class="form-control" id="total_calories" name="total_calories" placeholder="カロリーを入力">
+                    </div>
+
+                    <!-- 今日の食事記録と今日の合計カロリー -->
+                    <div class="daily-summary">
+                        <div class="daily-total-calories">
+                            <strong>今日の合計カロリー: {{ total_daily_calories }}kcal</strong>
+                        </div>
+                        
+                        {% for meal_log in daily_summary_logs.meal %}
+                        <div class="log-item">
+                            <div class="log-item-header">
+                                <span class="log-item-date">
+                                    {% if meal_log.meal_type == 'morning' %}🌅 朝食
+                                    {% elif meal_log.meal_type == 'lunch' %}🌞 昼食
+                                    {% elif meal_log.meal_type == 'dinner' %}🌙 夕食
+                                    {% elif meal_log.meal_type == 'snack1' %}🍪 間食1
+                                    {% elif meal_log.meal_type == 'snack2' %}🍎 間食2
+                                    {% elif meal_log.meal_type == 'snack3' %}🥨 間食3
+                                    {% else %}📝 {{ meal_log.meal_type or '不明' }}
+                                    {% endif %}
+                                    {% if meal_log.total_calories %} - {{ meal_log.total_calories }}kcal{% endif %}
+                                </span>
+                            </div>
+                            {% if meal_log.description %}
+                            <div style="margin-top: 0.5rem; color: #6c757d;">{{ meal_log.description }}</div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div style="text-align: center; color: #6c757d; padding: 2rem;">
+                            まだ食事の記録がありません
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 統合送信ボタン -->
+                <div class="card">
+                    <button type="button" class="btn btn-primary" onclick="submitForm()">📝 登録・更新する</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 体重タブ -->
+        <div id="weight" class="tab-content">
+            <div class="card">
+                <h3>📊 体重の推移</h3>
+                {% if target_progress_info %}
+                <div class="target-progress">
+                    {{ target_progress_info }}
+                </div>
+                {% endif %}
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 食事タブ -->
+        <div id="meal" class="tab-content">
+            <div class="card">
+                <h3>🍽️ 最近の食事記録</h3>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for meal_log in recent_meal_logs %}
+                    <div class="log-item">
+                        <div class="log-item-header">
+                            <span class="log-item-date">
+                                {{ meal_log.meal_datetime.strftime('%m/%d') }}
+                                {% if meal_log.meal_type == 'morning' %}🌅 朝食
+                                {% elif meal_log.meal_type == 'lunch' %}🌞 昼食
+                                {% elif meal_log.meal_type == 'dinner' %}🌙 夕食
+                                {% elif meal_log.meal_type == 'snack1' %}🍪 間食1
+                                {% elif meal_log.meal_type == 'snack2' %}🍎 間食2
+                                {% elif meal_log.meal_type == 'snack3' %}🥨 間食3
+                                {% endif %}
+                                {% if meal_log.total_calories %} - {{ meal_log.total_calories }}kcal{% endif %}
+                            </span>
+                        </div>
+                        {% if meal_log.description %}
+                        <div style="margin-top: 0.5rem; color: #6c757d;">{{ meal_log.description }}</div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; color: #6c757d; padding: 2rem;">
+                        まだ食事の記録がありません
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- メッセージタブ -->
+        <div id="messages" class="tab-content">
+            <div class="card">
+                <h3>💬 トレーナーとのメッセージ</h3>
+                
+                <!-- メッセージ状況表示 -->
+                <div class="message-status-card">
+                    <span class="message-status-number" id="unreadCount">0</span>
+                    <div class="message-status-text" id="unreadStatus">未読メッセージを確認中...</div>
+                    
+                    <div class="message-quick-actions">
+                        <a href="{{ url_for('messages_page') }}" class="message-quick-btn">
+                            📧 メッセージを見る
+                        </a>
+                        <a href="{{ url_for('messages_page') }}" class="message-quick-btn">
+                            ✍️ メッセージを送る
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 最近のメッセージプレビュー -->
+                <div style="margin-top: 1rem;">
+                    <h4 style="margin-bottom: 1rem; color: #495057;">トレーナーとのやり取り</h4>
+                    <div id="recentMessages">
+                        <div style="text-align: center; color: #6c757d; padding: 2rem;">
+                            メッセージを読み込み中...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 設定タブ -->
+        <div id="settings" class="tab-content">
+            <!-- 目標体重設定 -->
+            <div class="card">
+                <h3>🎯 目標体重設定</h3>
+                <form method="POST" action="{{ url_for('update_target_weight') }}">
+                    <div class="form-group">
+                        <label for="target_weight">目標体重 (kg)</label>
+                        <input type="number" step="0.1" class="form-control" id="target_weight" name="target_weight" 
+                               value="{{ current_student.target_weight or '' }}" placeholder="65.0">
+                    </div>
+                    <button type="submit" class="btn btn-success">🎯 目標を設定</button>
+                </form>
+            </div>
+
+            <!-- 体重公開設定 -->
+            <div class="card">
+                <h3>🌐 体重公開設定</h3>
+                <form method="POST" action="{{ url_for('update_public_weight_setting') }}">
+                    <div class="setting-item">
+                        <div>
+                            <strong>体重データをホームページで公開</strong>
+                            <div style="font-size: 0.875rem; color: #6c757d;">トレーナーがあなたの体重推移を確認できます</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="is_public_weight" value="true" 
+                                   {% if current_student.is_public_weight %}checked{% endif %} 
+                                   onchange="this.form.submit()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+
+            <!-- その他のメニュー -->
+            <div class="card">
+                <h3>📱 その他</h3>
+                <div class="setting-item">
+                    <a href="{{ url_for('home') }}" style="color: #667eea; text-decoration: none;">🏠 ホームページに戻る</a>
+                </div>
+                <div class="setting-item">
+                    <a href="{{ url_for('logout_user') }}" style="color: #dc3545; text-decoration: none;">🚪 ログアウト</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        let currentDate = new Date('{{ default_date.isoformat() }}');
+        let weightChart = null;
+        let selectedMealType = null;
+
+        // 日付変更
+        function changeDate(direction) {
+            currentDate.setDate(currentDate.getDate() + direction);
+            updateDateDisplay();
+            updateDatePicker();
+            navigateToDate();
+        }
+
+        function updateDateDisplay() {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+            document.getElementById('currentDate').textContent = 
+                currentDate.toLocaleDateString('ja-JP', options);
+        }
+
+        function updateDatePicker() {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            document.getElementById('datePicker').value = dateStr;
+        }
+
+        function navigateToDate() {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            document.getElementById('weight_date').value = dateStr;
+            document.getElementById('meal_date').value = dateStr;
+            document.getElementById('bowel_date').value = dateStr;
+            
+            const baseUrl = '{{ url_for("dashboard_page") }}';
+            window.location.href = `${baseUrl}?selected_date=${dateStr}`;
+        }
+
+        function goToDate(dateStr) {
+            currentDate = new Date(dateStr + 'T00:00:00');
+            updateDateDisplay();
+            navigateToDate();
+        }
+
+        function goToToday() {
+            currentDate = new Date();
+            updateDateDisplay();
+            updateDatePicker();
+            navigateToDate();
+        }
+
+        // 食事タイプ選択
+        function selectMealType(type) {
+            document.querySelectorAll('.meal-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const selectedBtn = document.querySelector(`[data-type="${type}"]`);
+            selectedBtn.classList.add('selected');
+            selectedMealType = type;
+            document.getElementById('meal_type').value = type;
+            
+            const mealTypeLabels = {
+                'morning': '朝食',
+                'lunch': '昼食',
+                'dinner': '夕食',
+                'snack1': '間食1',
+                'snack2': '間食2',
+                'snack3': '間食3'
+            };
+            
+            document.getElementById('meal-type-label').textContent = mealTypeLabels[type];
+        }
+
+        // タブ切り替え
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'weight' && !weightChart) {
+                loadWeightChart();
+            }
+            
+            if (tabName === 'messages') {
+                loadUnreadCount();
+                loadRecentMessages();
+            }
+        }
+
+        // 統合フォーム送信
+        function submitForm() {
+            const weightKg = document.getElementById('weight_kg').value;
+            const mealType = document.getElementById('meal_type').value;
+            const mealCalories = document.getElementById('total_calories').value;
+            const mealDescription = document.getElementById('meal_description').value;
+            const bowelRadio = document.querySelector('input[name="bowel_occurred"]:checked');
+            
+            if (!weightKg && !bowelRadio && !(mealType && (mealCalories || mealDescription))) {
+                alert('記録するデータを入力してください。');
+                return;
+            }
+            
+            if ((mealCalories || mealDescription) && !mealType) {
+                alert('食事タイプを選択してください。');
+                return;
+            }
+            
+            document.getElementById('mainForm').action = '{{ url_for("log_weight_data") }}';
+            document.getElementById('mainForm').submit();
+        }
+
+        // 体重グラフ読み込み
+        function loadWeightChart() {
+            fetch('{{ url_for("get_weight_data") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) return;
+                    
+                    const ctx = document.getElementById('weightChart').getContext('2d');
+                    const labels = data.labels.map(dateStr => {
+                        const date = new Date(dateStr);
+                        return (date.getMonth() + 1) + '/' + date.getDate();
+                    });
+                    
+                    const datasets = [{
+                        label: '体重 (kg)',
+                        data: data.data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        borderWidth: 3
+                    }];
+
+                    {% if current_student.target_weight %}
+                    datasets.push({
+                        label: '目標体重',
+                        data: Array(data.data.length).fill({{ current_student.target_weight }}),
+                        borderColor: '#e74c3c',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        borderWidth: 2
+                    });
+                    {% endif %}
+
+                    weightChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: labels, datasets: datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: true },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: 'white',
+                                    bodyColor: 'white',
+                                    borderColor: '#667eea',
+                                    borderWidth: 1,
+                                    cornerRadius: 8,
+                                    displayColors: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y + 'kg';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    grid: { color: 'rgba(0,0,0,0.1)' },
+                                    ticks: {
+                                        callback: function(value) {
+                                            return value + 'kg';
+                                        }
+                                    }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { maxTicksLimit: 6 }
+                                }
+                            },
+                            elements: { point: { hoverRadius: 8 } }
+                        }
+                    });
+                })
+                .catch(error => console.error('Error loading weight chart:', error));
+        }
+
+        // 未読メッセージ数を取得
+        async function loadUnreadCount() {
+            try {
+                const response = await fetch('{{ url_for("get_unread_count") }}');
+                const data = await response.json();
+                const unreadCount = data.count;
+                
+                const countElement = document.getElementById('unreadCount');
+                const statusElement = document.getElementById('unreadStatus');
+                const messagesTab = document.getElementById('messagesTab');
+                
+                if (unreadCount > 0) {
+                    countElement.textContent = unreadCount;
+                    statusElement.textContent = `件の未読メッセージがあります`;
+                    messagesTab.classList.add('has-unread');
+                } else {
+                    countElement.textContent = '0';
+                    statusElement.textContent = '未読メッセージはありません';
+                    messagesTab.classList.remove('has-unread');
+                }
+            } catch (error) {
+                console.error('未読数の取得に失敗:', error);
+                document.getElementById('unreadStatus').textContent = '取得に失敗しました';
+            }
+        }
+
+        // 最近のメッセージプレビューを取得
+        function loadRecentMessages() {
+            const recentMessagesElement = document.getElementById('recentMessages');
+            recentMessagesElement.innerHTML = `
+                <div style="text-align: center; color: #6c757d; padding: 1rem;">
+                    <p>最新のメッセージやトレーナーとのやり取りを確認するには、上の「メッセージを見る」ボタンをクリックしてください。</p>
+                    <div style="margin-top: 1rem;">
+                        <small>💡 トレーナーからのアドバイスや食事指導を受け取れます</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateDisplay();
+            updateDatePicker();
+            loadUnreadCount();
+            setInterval(loadUnreadCount, 300000);
+            
+            if ('ontouchstart' in window) {
+                document.body.style.overscrollBehavior = 'contain';
+            }
+        });
+    </script>
+</body>
+</html>

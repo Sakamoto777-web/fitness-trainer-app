@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生徒登録</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f7f6; color: #333; }
+        nav { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        nav a { margin-right: 15px; text-decoration: none; color: #007bff; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            margin: 40px auto;
+        }
+        .form-container h2 { text-align: center; color: #333; margin-bottom: 25px; }
+        form p { margin-bottom: 18px; }
+        form label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="password"],
+        form input[type="number"],
+        form select {
+            width: calc(100% - 20px);
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        form input[type="text"]:focus,
+        form input[type="email"]:focus,
+        form input[type="password"]:focus,
+        form input[type="number"]:focus,
+        form select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        form button[type="submit"] {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+        }
+        form button[type="submit"]:hover { background-color: #218838; }
+        .login-link-container {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 15px;
+            color: #666;
+        }
+        .login-link-container a { color: #007bff; text-decoration: none; font-weight: bold; }
+        .login-link-container a:hover { text-decoration: underline; }
+        .flash-message {
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .flash-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .flash-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('home') }}">ホーム</a>
+        {% if 'student_id' in session %}
+            <span>こんにちは、{{ session.nickname }}さん！</span>
+            <a href="{{ url_for('dashboard_page') }}">ダッシュボード</a>
+            <a href="{{ url_for('logout_user') }}">ログアウト</a>
+        {% elif 'trainer_id' in session %}
+            <span>こんにちは、{{ session.trainer_name }}トレーナー！</span>
+            <a href="{{ url_for('trainer_dashboard_page') }}">トレーナーダッシュボード</a>
+            <a href="{{ url_for('trainer_logout') }}">ログアウト</a>
+        {% else %}
+            <a href="{{ url_for('login_page') }}">生徒ログイン</a>
+            <a href="{{ url_for('register_page') }}">生徒新規登録</a>
+            <a href="{{ url_for('trainer_login_page') }}">トレーナーログイン</a>
+            <a href="{{ url_for('trainer_register_page') }}">トレーナー新規登録</a>
+        {% endif %}
+    </nav>
+    <hr>
+    <div id="messages_anchor"></div>
+
+    <div class="form-container">
+        <h2>生徒新規登録</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register_page') }}">
+            <p>
+                <label for="nickname">ニックネーム:</label>
+                <input type="text" id="nickname" name="nickname" required>
+            </p>
+            <p>
+                <label for="email">メールアドレス:</label>
+                <input type="email" id="email" name="email" required>
+            </p>
+            <p>
+                <label for="password">パスワード:</label>
+                <input type="password" id="password" name="password" required>
+            </p>
+            <p>
+                <label for="confirm_password">パスワード（確認用）:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </p>
+            <p>
+                <label for="height">身長 (cm):</label>
+                <input type="number" step="1" id="height" name="height" placeholder="例: 170">
+            </p>
+            <p>
+                <label for="age_group">年齢層:</label>
+                <select id="age_group" name="age_group">
+                    <option value="">選択してください</option>
+                    <option value="14歳以下">14歳以下</option>
+                    <option value="15-19歳">15-19歳</option>
+                    <option value="20-24歳">20-24歳</option>
+                    <option value="25-29歳">25-29歳</option>
+                    <option value="30-34歳">30-34歳</option>
+                    <option value="35-39歳">35-39歳</option>
+                    <option value="40-44歳">40-44歳</option>
+                    <option value="45-49歳">45-49歳</option>
+                    <option value="50-54歳">50-54歳</option>
+                    <option value="55-59歳">55-59歳</option>
+                    <option value="60歳以上">60歳以上</option>
+                </select>
+            </p>
+            <button type="submit">登録する</button>
+        </form>
+        <div class="login-link-container">
+            既にアカウントをお持ちですか？ <a href="{{ url_for('login_page') }}">ログインはこちら</a>
+        </div>
+    </div>
+</body>
+</html>

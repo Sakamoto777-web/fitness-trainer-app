@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メッセージ - {{ current_student.nickname }}さん</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* デスクトップ用スタイル（768px以上） */
+        @media (min-width: 769px) {
+            body {
+                background-color: #f8f9fa;
+                overflow: auto;
+                height: auto;
+            }
+            .desktop-container { display: block !important; }
+            .mobile-container { display: none !important; }
+        }
+
+        /* モバイル用スタイル（768px以下） */
+        @media (max-width: 768px) {
+            body {
+                background-color: #f0f0f0;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .desktop-container { display: none !important; }
+            .mobile-container { display: flex !important; }
+        }
+
+        /* ===== デスクトップ用スタイル ===== */
+        .desktop-container {
+            min-height: calc(100vh - 160px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            min-height: calc(100vh - 160px);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            height: calc(100vh - 160px);
+        }
+
+        .messages-column {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .input-column {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .message-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: #495057;
+            margin: 0;
+        }
+
+        .messages-history {
+            padding: 0;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .desktop-message-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            animation: fadeInMessage 0.3s ease-out;
+        }
+
+        @keyframes fadeInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .desktop-message-item:last-child {
+            border-bottom: none;
+        }
+
+        .desktop-message-item.from-trainer {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+            border-left: 4px solid #28a745;
+        }
+
+        .desktop-message-item.from-student {
+            background: linear-gradient(135deg, #e7f3ff 0%, #cce7ff 100%);
+            border-left: 4px solid #667eea;
+        }
+
+        .desktop-message-item.recalled {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid #6c757d;
+            opacity: 0.7;
+        }
+
+        .desktop-message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .desktop-message-sender {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .desktop-message-time {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .desktop-message-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .type-advice {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .type-question {
+            background: #cce7ff;
+            color: #004085;
+        }
+
+        .type-encouragement {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .type-general {
+            background: #e7f3ff;
+            color: #0c5aa6;
+        }
+
+        .desktop-message-content {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .desktop-delete-message-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .desktop-delete-message-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .desktop-message-item.deleting {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .desktop-message-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .recalled-message {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .message-form {
+            padding: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .message-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .message-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .type-btn {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .type-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .type-btn:hover {
+            border-color: #667eea;
+        }
+
+        .desktop-image-upload-section {
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .desktop-image-upload-section:hover {
+            border-color: #667eea;
+            background-color: #f8f9fa;
+        }
+
+        .desktop-image-upload-section.dragover {
+            border-color: #667eea;
+            background-color: #e7f3ff;
+        }
+
+        .desktop-file-input {
+            display: none;
+        }
+
+        .desktop-file-input-label {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .desktop-file-input-label:hover {
+            background: #5a67d8;
+        }
+
+        .desktop-image-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .desktop-preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .desktop-remove-image-btn {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .desktop-remove-image-btn:hover {
+            background: #c82333;
+        }
+
+        .desktop-file-info {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .no-messages {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .no-messages h3 {
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+
+        .trainer-selection {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .trainer-selection h4 {
+            margin-bottom: 0.75rem;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .trainer-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .trainer-btn.selected {
+            border-color: #667eea;
+            background: #e7f3ff;
+        }
+
+        .trainer-btn:hover {
+            border-color: #667eea;
+        }
+
+        .quick-messages {
+            background: #f0f8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .quick-messages h4 {
+            margin-bottom: 0.75rem;
+            color: #155724;
+            font-size: 0.9rem;
+        }
+
+        .quick-message-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .quick-message-btn {
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .quick-message-btn:hover {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        /* ===== モバイル用スタイル ===== */
+        .mobile-container {
+            height: 100vh;
+            flex-direction: column;
+            background: #f0f0f0;
+        }
+
+        .mobile-header {
+            background: #4a9eff;
+            color: white;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .mobile-header h1 {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .mobile-back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .mobile-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f0f0f0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-message {
+            margin-bottom: 1rem;
+            display: flex;
+            animation: fadeInMessage 0.3s ease-out;
+        }
+
+        .mobile-message.from-student {
+            justify-content: flex-end;
+        }
+
+        .mobile-message.from-trainer {
+            justify-content: flex-start;
+        }
+
+        .mobile-message.recalled {
+            opacity: 0.7;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .mobile-message.from-student .message-bubble {
+            background: #4a9eff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .mobile-message.from-trainer .message-bubble {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #e1e1e1;
+        }
+
+        .mobile-message.recalled .message-bubble {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            font-style: italic;
+        }
+
+        .message-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .mobile-message.from-student .message-meta {
+            justify-content: flex-end;
+            color: white;
+        }
+
+        .mobile-message.from-trainer .message-meta {
+            justify-content: flex-start;
+            color: #666;
+        }
+
+        .message-type-mini {
+            background: rgba(255,255,255,0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.6rem;
+            margin-left: 0.5rem;
+        }
+
+        .mobile-message.from-trainer .message-type-mini {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .mobile-delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.2rem;
+            margin-left: 0.5rem;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .mobile-delete-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .mobile-message-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mobile-input-area {
+            background: white;
+            border-top: 1px solid #e1e1e1;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .mobile-input-container {
+            flex: 1;
+            background: #f8f8f8;
+            border-radius: 20px;
+            border: 1px solid #e1e1e1;
+            display: flex;
+            align-items: flex-end;
+            min-height: 40px;
+            max-height: 120px;
+            padding: 0.5rem 0.75rem;
+            position: relative;
+        }
+
+        .mobile-input-container.has-image {
+            border-color: #4a9eff;
+            background: #f0f8ff;
+        }
+
+        .mobile-message-input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            resize: none;
+            font-size: 1rem;
+            line-height: 1.4;
+            max-height: 80px;
+            overflow-y: auto;
+            font-family: inherit;
+            padding: 0.25rem 0;
+        }
+
+        .mobile-message-input::placeholder {
+            color: #999;
+        }
+
+        .mobile-input-buttons {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.25rem;
+            margin-left: 0.25rem;
+        }
+
+        .mobile-attach-btn {
+            background: rgba(74, 158, 255, 0.1);
+            border: 2px solid #4a9eff;
+            color: #4a9eff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .mobile-attach-btn:hover {
+            background: rgba(74, 158, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .mobile-attach-btn.active {
+            background: #4a9eff;
+            color: white;
+            border-color: #4a9eff;
+        }
+
+        .mobile-type-btn {
+            background: none;
+            border: none;
+            color: #4a9eff;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .mobile-type-btn:hover {
+            background: rgba(74, 158, 255, 0.1);
+        }
+
+        .mobile-type-btn.has-selection {
+            background: #4a9eff;
+            color: white;
+        }
+
+        .mobile-send-btn {
+            background: #4a9eff;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
+        }
+
+        .mobile-send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .mobile-send-btn:not(:disabled):hover {
+            background: #3a8ee6;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+        }
+
+        .mobile-send-btn:not(:disabled):active {
+            transform: scale(0.95);
+        }
+
+        .mobile-image-preview {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            padding: 1rem;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #e1e1e1;
+            border-bottom: none;
+            display: none;
+            z-index: 10;
+        }
+
+        .mobile-image-preview.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .mobile-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .mobile-preview-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .mobile-remove-image {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-remove-image:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+        }
+
+        .mobile-preview-image {
+            width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mobile-preview-info {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .image-indicator {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 2px solid white;
+            display: none;
+        }
+
+        .image-indicator.show {
+            display: flex;
+            animation: bounceIn 0.3s ease;
+        }
+
+        .type-indicator {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ff6b35;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            display: none;
+        }
+
+        .type-indicator.show {
+            display: flex;
+            animation: bounceIn 0.3s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .hidden-file-input {
+            display: none;
+        }
+
+        .no-messages-mobile {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #999;
+        }
+
+        .type-modal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+        }
+
+        .type-modal.show {
+            transform: translateY(0);
+        }
+
+        .type-modal-header {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .type-options {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .type-option {
+            padding: 1rem;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .type-option:hover {
+            background: #f8f8f8;
+            border-color: #4a9eff;
+        }
+
+        .type-option.selected {
+            background: #4a9eff;
+            color: white;
+            border-color: #4a9eff;
+        }
+
+        .mobile-alert {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: slideDown 0.3s ease;
+        }
+
+        .mobile-alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .mobile-alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* レスポンシブ調整 */
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- デスクトップ用UI -->
+    <div class="desktop-container">
+        <div class="header">
+            <div class="header-content">
+                <h1>💬 メッセージ</h1>
+                <a href="{{ url_for('dashboard_page') }}" class="back-btn">← ダッシュボード</a>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- フラッシュメッセージ -->
+            {% with flash_messages = get_flashed_messages(with_categories=true) %}
+                {% if flash_messages %}
+                    {% for category, message in flash_messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- 2カラムレイアウト -->
+            <div class="main-layout">
+                <!-- 左カラム: メッセージ履歴 -->
+                <div class="messages-column">
+                    <div class="message-section">
+                        <div class="section-header">
+                            <h2 class="section-title">📋 メッセージ履歴</h2>
+                        </div>
+                        <div class="messages-history" id="desktopMessagesHistory">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    {% if message.is_recalled %}
+                                        <div class="desktop-message-item recalled {% if message.sender_type == 'trainer' %}from-trainer{% else %}from-student{% endif %}" data-message-id="{{ message.id }}">
+                                            <div class="desktop-message-header">
+                                                <div>
+                                                    <span class="desktop-message-sender">
+                                                        {% if message.sender_type == 'trainer' %}
+                                                            👨‍⚕️ {{ trainers[message.trainer_id].name }}トレーナー
+                                                        {% else %}
+                                                            👤 {{ current_student.nickname }}さん
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div class="desktop-message-time">
+                                                    {{ message.created_at.strftime('%m/%d %H:%M') }}
+                                                </div>
+                                            </div>
+                                            <div class="desktop-message-content">
+                                                <div class="recalled-message">📵 このメッセージは取り消されました</div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="desktop-message-item {% if message.sender_type == 'trainer' %}from-trainer{% else %}from-student{% endif %}" data-message-id="{{ message.id }}">
+                                            <div class="desktop-message-header">
+                                                <div>
+                                                    <span class="desktop-message-sender">
+                                                        {% if message.sender_type == 'trainer' %}
+                                                            👨‍⚕️ {{ trainers[message.trainer_id].name }}トレーナー
+                                                        {% else %}
+                                                            👤 {{ current_student.nickname }}さん
+                                                        {% endif %}
+                                                    </span>
+                                                    <span class="desktop-message-type-badge type-{{ message.message_type }}">
+                                                        {% if message.message_type == 'advice' %}💡 アドバイス
+                                                        {% elif message.message_type == 'question' %}❓ 質問
+                                                        {% elif message.message_type == 'encouragement' %}🌟 応援
+                                                        {% elif message.message_type == 'general' %}📝 報告・連絡
+                                                        {% else %}💬 その他
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                    <div class="desktop-message-time">
+                                                        {{ message.created_at.strftime('%m/%d %H:%M') }}
+                                                    </div>
+                                                    {% if message.sender_type == 'student' %}
+                                                        <button class="desktop-delete-message-btn" 
+                                                                onclick="deleteMessage({{ message.id }})" 
+                                                                title="メッセージを削除（送信から30分以内）">
+                                                            🗑️
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="desktop-message-content">
+                                                {{ message.content|replace('\n', '<br>')|safe }}
+                                                {% if message.image_filename %}
+                                                    <br>
+                                                    <img src="{{ url_for('uploaded_file', filename=message.image_filename) }}" 
+                                                         alt="添付画像" class="desktop-message-image">
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="no-messages">
+                                    <h3>📭 まだメッセージがありません</h3>
+                                    <p>トレーナーとのコミュニケーションを始めましょう！</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右カラム: メッセージ入力 -->
+                <div class="input-column">
+                    <div class="message-section">
+                        <div class="section-header">
+                            <h2 class="section-title">✍️ メッセージを送る</h2>
+                        </div>
+                        <div class="message-form">
+                            <!-- クイックメッセージ -->
+                            <div class="quick-messages">
+                                <h4>🚀 よく使うメッセージ</h4>
+                                <div class="quick-message-grid">
+                                    <button type="button" class="quick-message-btn" onclick="insertTemplate('記録を更新しました！')">記録を更新しました！</button>
+                                    <button type="button" class="quick-message-btn" onclick="insertTemplate('アドバイスありがとうございます！')">アドバイスありがとうございます！</button>
+                                    <button type="button" class="quick-message-btn" onclick="insertTemplate('質問があります。')">質問があります。</button>
+                                    <button type="button" class="quick-message-btn" onclick="insertTemplate('体調は良好です。')">体調は良好です。</button>
+                                </div>
+                            </div>
+
+                            <!-- 入力フォーム -->
+                            <form method="POST" action="{{ url_for('send_message') }}" enctype="multipart/form-data" id="desktopMessageForm">
+                                <!-- トレーナー選択 -->
+                                <div class="form-group">
+                                    <label>送信先のトレーナー</label>
+                                    <div class="trainer-selection">
+                                        {% for trainer_id, trainer in trainers.items() %}
+                                            <button type="button" class="trainer-btn{% if loop.first %} selected{% endif %}" 
+                                                    data-trainer-id="{{ trainer_id }}" onclick="selectTrainer({{ trainer_id }})">
+                                                👨‍⚕️ {{ trainer.name }}トレーナー
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="trainer_id" id="desktopTrainerId" value="{% if trainers %}{{ trainers.keys()|list|first }}{% endif %}">
+                                </div>
+                                
+                                <!-- メッセージタイプ -->
+                                <div class="form-group">
+                                    <label>メッセージの種類</label>
+                                    <div class="message-type-grid">
+                                        <button type="button" class="type-btn selected" data-type="general" onclick="selectMessageType('general')">
+                                            💬 報告・連絡
+                                        </button>
+                                        <button type="button" class="type-btn" data-type="question" onclick="selectMessageType('question')">
+                                            ❓ 質問
+                                        </button>
+                                    </div>
+                                    <input type="hidden" name="message_type" id="desktopMessageType" value="general">
+                                </div>
+
+                                <!-- メッセージ内容 -->
+                                <div class="form-group">
+                                    <label for="desktopContent">メッセージ内容</label>
+                                    <textarea class="form-control message-textarea" id="desktopContent" name="content" 
+                                              placeholder="トレーナーへのメッセージを入力してください" required></textarea>
+                                </div>
+
+                                <!-- 画像アップロード -->
+                                <div class="form-group">
+                                    <label>📸 画像を添付（任意）</label>
+                                    <div class="desktop-image-upload-section" id="desktopImageUploadSection">
+                                        <input type="file" id="desktopImageInput" name="image" class="desktop-file-input" accept="image/*">
+                                        <label for="desktopImageInput" class="desktop-file-input-label">
+                                            📁 画像を選択
+                                        </label>
+                                        <div class="desktop-file-info">
+                                            JPG、PNG、GIF対応・自動で300KB以下に圧縮されます
+                                        </div>
+                                        <div class="desktop-image-preview" id="desktopImagePreview" style="display: none;">
+                                            <img id="desktopPreviewImg" class="desktop-preview-image" alt="プレビュー">
+                                            <br>
+                                            <button type="button" class="desktop-remove-image-btn" onclick="removeDesktopImage()">❌ 画像を削除</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" id="desktopSubmitBtn" style="width: 100%;">📤 メッセージを送信</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- モバイル用UI -->
+    <div class="mobile-container">
+        <!-- ヘッダー -->
+        <div class="mobile-header">
+            <button class="mobile-back-btn" onclick="location.href='{{ url_for('dashboard_page') }}'">
+                ←
+            </button>
+            <h1>💬 メッセージ</h1>
+            <div style="width: 36px;"></div>
+        </div>
+
+        <!-- メッセージエリア -->
+        <div class="mobile-messages" id="mobileMessages">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.is_recalled %}
+                        <div class="mobile-message recalled {% if message.sender_type == 'trainer' %}from-trainer{% else %}from-student{% endif %}" data-message-id="{{ message.id }}">
+                            <div class="message-bubble">
+                                <div class="recalled-message">📵 このメッセージは取り消されました</div>
+                                <div class="message-meta">
+                                    <span>{{ message.created_at.strftime('%H:%M') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="mobile-message {% if message.sender_type == 'trainer' %}from-trainer{% else %}from-student{% endif %}" data-message-id="{{ message.id }}">
+                            <div class="message-bubble">
+                                {{ message.content|replace('\n', '<br>')|safe }}
+                                {% if message.image_filename %}
+                                    <br>
+                                    <img src="{{ url_for('uploaded_file', filename=message.image_filename) }}" 
+                                         alt="添付画像" class="mobile-message-image">
+                                {% endif %}
+                                <div class="message-meta">
+                                    <span>{{ message.created_at.strftime('%H:%M') }}</span>
+                                    <span class="message-type-mini">
+                                        {% if message.message_type == 'general' %}📝
+                                        {% elif message.message_type == 'question' %}❓
+                                        {% elif message.message_type == 'advice' %}💡
+                                        {% elif message.message_type == 'encouragement' %}🌟
+                                        {% endif %}
+                                    </span>
+                                    {% if message.sender_type == 'student' %}
+                                        <button class="mobile-delete-btn" onclick="deleteMessage({{ message.id }})" title="削除">
+                                            🗑️
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="no-messages-mobile">
+                    <p>📭 まだメッセージがありません</p>
+                    <p>トレーナーとの会話を始めましょう！</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 入力エリア -->
+        <div class="mobile-input-area">
+            <div class="mobile-image-preview" id="mobileImagePreview">
+                <div class="mobile-preview-header">
+                    <div class="mobile-preview-title">📷 添付画像</div>
+                    <button class="mobile-remove-image" onclick="removeMobileImage()">✕</button>
+                </div>
+                <img id="mobilePreviewImg" class="mobile-preview-image" alt="プレビュー">
+                <div class="mobile-preview-info">自動で300KB以下に圧縮されます</div>
+            </div>
+            
+            <div class="mobile-input-container" id="mobileInputContainer">
+                <textarea 
+                    class="mobile-message-input" 
+                    id="mobileMessageInput"
+                    placeholder="メッセージを入力..."
+                    rows="1"
+                ></textarea>
+                
+                <div class="mobile-input-buttons">
+                    <button type="button" class="mobile-attach-btn" id="attachBtn" onclick="document.getElementById('mobileImageInput').click()">
+                        📎
+                        <div class="image-indicator" id="imageIndicator">1</div>
+                    </button>
+                    
+                    <button type="button" class="mobile-type-btn" id="typeBtn" onclick="showTypeModal()">
+                        🏷️
+                        <div class="type-indicator" id="typeIndicator">📝</div>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="button" class="mobile-send-btn" id="mobileSendBtn" onclick="sendMobileMessage()">
+                ➤
+            </button>
+            
+            <!-- 隠れたフォーム -->
+            <form id="mobileMessageForm" method="POST" action="{{ url_for('send_message') }}" enctype="multipart/form-data" style="display: none;">
+                <input type="hidden" name="trainer_id" value="{% if trainers %}{{ trainers.keys()|list|first }}{% endif %}">
+                <input type="hidden" name="message_type" id="mobileMessageType" value="general">
+                <input type="file" id="mobileImageInput" name="image" class="hidden-file-input" accept="image/*">
+                <input type="hidden" name="content" id="hiddenContent">
+            </form>
+        </div>
+    </div>
+
+    <!-- タイプ選択モーダル -->
+    <div class="type-modal" id="typeModal">
+        <div class="type-modal-header">メッセージの種類を選択</div>
+        <div class="type-options">
+            <div class="type-option selected" data-type="general" onclick="selectMobileType('general')">
+                📝 報告・連絡
+            </div>
+            <div class="type-option" data-type="question" onclick="selectMobileType('question')">
+                ❓ 質問
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 共通変数
+        var selectedMessageType = 'general';
+        var selectedTrainerId = {% if trainers %}{{ trainers.keys()|list|first }}{% else %}null{% endif %};
+        var lastMessageId = 0;
+        var pollingInterval = null;
+
+        // ==== リアルタイム機能 ====
+        function getLastMessageId() {
+            var messages = document.querySelectorAll('[data-message-id]');
+            var maxId = 0;
+            for (var i = 0; i < messages.length; i++) {
+                var id = parseInt(messages[i].getAttribute('data-message-id'));
+                if (id > maxId) maxId = id;
+            }
+            return maxId;
+        }
+
+        function checkNewMessages() {
+            var currentLastId = getLastMessageId();
+            
+            // より包括的なAPIリクエスト
+            var url = '/api/messages/new?after=' + currentLastId + '&check_recalled=true&timestamp=' + Date.now();
+            
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('=== API Response ===', data);
+                
+                // 新着メッセージの処理
+                if (data.success && data.messages && data.messages.length > 0) {
+                    console.log('新着メッセージ:', data.messages.length + '件');
+                    addNewMessages(data.messages);
+                }
+                
+                // 全てのメッセージ状態をチェック（取り消し状態を含む）
+                if (data.all_messages) {
+                    console.log('全メッセージ状態チェック:', data.all_messages.length + '件');
+                    checkMessageStates(data.all_messages);
+                }
+                
+                // 削除されたメッセージ
+                if (data.deleted_messages && data.deleted_messages.length > 0) {
+                    console.log('削除されたメッセージ:', data.deleted_messages);
+                    handleDeletedMessages(data.deleted_messages);
+                }
+                
+                // 取り消されたメッセージ（直接的な通知）
+                if (data.recalled_messages && data.recalled_messages.length > 0) {
+                    console.log('取り消されたメッセージ（直接）:', data.recalled_messages);
+                    for (var i = 0; i < data.recalled_messages.length; i++) {
+                        var recalledId = data.recalled_messages[i];
+                        updateMessageToRecalled(recalledId);
+                    }
+                    showRecallNotification(data.recalled_messages.length);
+                }
+            })
+            .catch(function(error) {
+                console.error('メッセージチェックエラー:', error);
+                if (error.message.includes('HTTP 404') || error.message.includes('HTTP 500')) {
+                    console.log('API エラーのため、ポーリングを一時停止します');
+                    stopPolling();
+                    setTimeout(startPolling, 30000);
+                }
+            });
+        }
+
+        function checkMessageStates(allMessages) {
+            // 現在表示されているメッセージと比較して状態変更を検出
+            for (var i = 0; i < allMessages.length; i++) {
+                var message = allMessages[i];
+                var currentElement = document.querySelector('[data-message-id="' + message.id + '"]');
+                
+                if (currentElement) {
+                    var isCurrentlyRecalled = currentElement.classList.contains('recalled');
+                    var shouldBeRecalled = message.is_recalled || message.recalled_by;
+                    
+                    if (!isCurrentlyRecalled && shouldBeRecalled) {
+                        console.log('メッセージ ' + message.id + ' が取り消されました');
+                        updateMessageToRecalled(message.id);
+                        showRecallNotification(1);
+                    }
+                }
+            }
+        }
+
+        function updateMessageToRecalled(messageId) {
+            console.log('メッセージを取り消し表示に更新:', messageId);
+            
+            // デスクトップ版
+            var desktopElement = document.querySelector('.desktop-message-item[data-message-id="' + messageId + '"]');
+            if (desktopElement && !desktopElement.classList.contains('recalled')) {
+                console.log('デスクトップ版を更新:', messageId);
+                desktopElement.classList.add('recalled');
+                var contentElement = desktopElement.querySelector('.desktop-message-content');
+                if (contentElement) {
+                    contentElement.innerHTML = '<div class="recalled-message">📵 このメッセージは取り消されました</div>';
+                }
+                
+                // アニメーション効果
+                desktopElement.style.transition = 'all 0.5s ease';
+                desktopElement.style.transform = 'scale(0.98)';
+                setTimeout(function() {
+                    desktopElement.style.transform = 'scale(1)';
+                }, 200);
+            }
+            
+            // モバイル版
+            var mobileElement = document.querySelector('.mobile-message[data-message-id="' + messageId + '"]');
+            if (mobileElement && !mobileElement.classList.contains('recalled')) {
+                console.log('モバイル版を更新:', messageId);
+                mobileElement.classList.add('recalled');
+                var bubbleElement = mobileElement.querySelector('.message-bubble');
+                if (bubbleElement) {
+                    var metaElement = bubbleElement.querySelector('.message-meta');
+                    var metaHtml = metaElement ? metaElement.outerHTML : '';
+                    bubbleElement.innerHTML = '<div class="recalled-message">📵 このメッセージは取り消されました</div>' + metaHtml;
+                }
+                
+                // アニメーション効果
+                mobileElement.style.transition = 'all 0.5s ease';
+                mobileElement.style.transform = 'scale(0.98)';
+                setTimeout(function() {
+                    mobileElement.style.transform = 'scale(1)';
+                }, 200);
+            }
+        }
+
+        function showRecallNotification(count) {
+            var message = count > 1 ? count + '件のメッセージが取り消されました' : 'メッセージが取り消されました';
+            
+            // デスクトップ・モバイル共通の通知
+            if (window.innerWidth > 768) {
+                // デスクトップ版通知
+                var notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #17a2b8;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 9999;
+                    font-size: 14px;
+                    animation: slideInRight 0.3s ease;
+                `;
+                notification.textContent = '📵 ' + message;
+                document.body.appendChild(notification);
+                
+                setTimeout(function() {
+                    notification.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(function() {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            } else {
+                // モバイル版通知
+                showMobileAlert('📵 ' + message, 'info');
+            }
+            
+            console.log('取り消し通知を表示:', message);
+        }
+
+        function addNewMessages(messages) {
+            // デスクトップとモバイルの両方に追加
+            addNewMessagesToDesktop(messages);
+            addNewMessagesToMobile(messages);
+        }
+
+        function addNewMessagesToDesktop(messages) {
+            var messagesContainer = document.getElementById('desktopMessagesHistory');
+            if (!messagesContainer) return;
+            
+            var isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+            
+            for (var i = 0; i < messages.length; i++) {
+                var message = messages[i];
+                var messageElement = createDesktopMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            }
+            
+            if (isNearBottom) {
+                setTimeout(function() {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 100);
+            }
+        }
+
+        function addNewMessagesToMobile(messages) {
+            var messagesContainer = document.getElementById('mobileMessages');
+            if (!messagesContainer) return;
+            
+            var isNearBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+            
+            for (var i = 0; i < messages.length; i++) {
+                var message = messages[i];
+                var messageElement = createMobileMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+                
+                messageElement.style.opacity = '0';
+                messageElement.style.transform = 'translateY(20px)';
+                setTimeout(function(el) {
+                    return function() {
+                        el.style.transition = 'all 0.3s ease';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    };
+                }(messageElement), 50);
+            }
+            
+            if (isNearBottom) {
+                setTimeout(scrollToBottom, 100);
+            }
+        }
+
+        function handleDeletedMessages(deletedMessages) {
+            for (var i = 0; i < deletedMessages.length; i++) {
+                var messageId = deletedMessages[i];
+                var messageElements = document.querySelectorAll('[data-message-id="' + messageId + '"]');
+                for (var j = 0; j < messageElements.length; j++) {
+                    messageElements[j].style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(function(el) {
+                        return function() { 
+                            if (el.parentNode) {
+                                el.parentNode.removeChild(el); 
+                            }
+                        };
+                    }(messageElements[j]), 300);
+                }
+            }
+        }
+
+        function handleRecalledMessages(recalledMessages) {
+            for (var i = 0; i < recalledMessages.length; i++) {
+                var messageData = recalledMessages[i];
+                var messageId = messageData.id || messageData; // ID直接の場合とオブジェクトの場合に対応
+                
+                console.log('取り消し処理中のメッセージID:', messageId);
+                
+                // デスクトップ版の更新
+                var desktopElement = document.querySelector('.desktop-message-item[data-message-id="' + messageId + '"]');
+                if (desktopElement) {
+                    console.log('デスクトップ版メッセージを取り消し表示に更新:', messageId);
+                    desktopElement.classList.add('recalled');
+                    var contentElement = desktopElement.querySelector('.desktop-message-content');
+                    if (contentElement) {
+                        contentElement.innerHTML = '<div class="recalled-message">📵 このメッセージは取り消されました</div>';
+                    }
+                } else {
+                    console.log('デスクトップ版メッセージが見つかりません:', messageId);
+                }
+                
+                // モバイル版の更新
+                var mobileElement = document.querySelector('.mobile-message[data-message-id="' + messageId + '"]');
+                if (mobileElement) {
+                    console.log('モバイル版メッセージを取り消し表示に更新:', messageId);
+                    mobileElement.classList.add('recalled');
+                    var bubbleElement = mobileElement.querySelector('.message-bubble');
+                    if (bubbleElement) {
+                        // メタ情報は保持して、内容だけ変更
+                        var metaElement = bubbleElement.querySelector('.message-meta');
+                        var metaHtml = metaElement ? metaElement.outerHTML : '';
+                        bubbleElement.innerHTML = '<div class="recalled-message">📵 このメッセージは取り消されました</div>' + metaHtml;
+                    }
+                } else {
+                    console.log('モバイル版メッセージが見つかりません:', messageId);
+                }
+            }
+            
+            // 取り消し通知を表示
+            if (recalledMessages.length > 0) {
+                showAlert('メッセージが取り消されました', 'info');
+            }
+        }
+
+        function handleUpdatedMessages(updatedMessages) {
+            // 取り消し状態が変更されたメッセージを処理
+            for (var i = 0; i < updatedMessages.length; i++) {
+                var message = updatedMessages[i];
+                
+                if (message.is_recalled) {
+                    // 取り消された場合
+                    handleRecalledMessages([message.id]);
+                } else {
+                    // 取り消しが取り消された場合（通常は発生しないが念のため）
+                    restoreMessage(message);
+                }
+            }
+        }
+
+        function restoreMessage(message) {
+            // メッセージの復元（通常は使用しないが、念のため実装）
+            var messageElements = document.querySelectorAll('[data-message-id="' + message.id + '"]');
+            for (var i = 0; i < messageElements.length; i++) {
+                messageElements[i].classList.remove('recalled');
+                // 元の内容に戻す処理が必要であれば実装
+            }
+        }
+
+        function createDesktopMessageElement(message) {
+            var div = document.createElement('div');
+            div.className = 'desktop-message-item ' + (message.sender_type === 'trainer' ? 'from-trainer' : 'from-student');
+            div.setAttribute('data-message-id', message.id);
+            
+            var messageTime = new Date(message.created_at).toLocaleDateString('ja-JP', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            var typeLabels = {
+                'general': '📝 報告・連絡',
+                'question': '❓ 質問',
+                'advice': '💡 アドバイス',
+                'encouragement': '🌟 応援'
+            };
+            
+            var imageHtml = '';
+            if (message.image_filename) {
+                imageHtml = '<br><img src="/uploads/messages/' + message.image_filename + '" alt="添付画像" class="desktop-message-image">';
+            }
+            
+            var senderName = '';
+            var deleteButton = '';
+            if (message.sender_type === 'trainer') {
+                senderName = '👨‍⚕️ トレーナー';
+            } else {
+                senderName = '👤 あなた';
+                deleteButton = '<button class="desktop-delete-message-btn" onclick="deleteMessage(' + message.id + ')" title="削除">🗑️</button>';
+            }
+            
+            div.innerHTML = 
+                '<div class="desktop-message-header">' +
+                    '<div>' +
+                        '<span class="desktop-message-sender">' + senderName + '</span>' +
+                        '<span class="desktop-message-type-badge type-' + message.message_type + '">' +
+                            (typeLabels[message.message_type] || '💬 その他') +
+                        '</span>' +
+                    '</div>' +
+                    '<div style="display: flex; align-items: center; gap: 0.5rem;">' +
+                        '<div class="desktop-message-time">' + messageTime + '</div>' +
+                        deleteButton +
+                    '</div>' +
+                '</div>' +
+                '<div class="desktop-message-content">' +
+                    message.content.replace(/\n/g, '<br>') +
+                    imageHtml +
+                '</div>';
+            
+            return div;
+        }
+
+        function createMobileMessageElement(message) {
+            var div = document.createElement('div');
+            div.className = 'mobile-message ' + (message.sender_type === 'trainer' ? 'from-trainer' : 'from-student');
+            div.setAttribute('data-message-id', message.id);
+            
+            var messageTime = new Date(message.created_at).toLocaleTimeString('ja-JP', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            var typeIcons = {
+                'general': '📝',
+                'question': '❓',
+                'advice': '💡',
+                'encouragement': '🌟'
+            };
+            
+            var imageHtml = '';
+            if (message.image_filename) {
+                imageHtml = '<br><img src="/uploads/messages/' + message.image_filename + '" alt="添付画像" class="mobile-message-image">';
+            }
+            
+            var deleteButton = '';
+            if (message.sender_type === 'student') {
+                deleteButton = '<button class="mobile-delete-btn" onclick="deleteMessage(' + message.id + ')" title="削除">🗑️</button>';
+            }
+            
+            div.innerHTML = 
+                '<div class="message-bubble">' +
+                    message.content.replace(/\n/g, '<br>') +
+                    imageHtml +
+                    '<div class="message-meta">' +
+                        '<span>' + messageTime + '</span>' +
+                        '<span class="message-type-mini">' + (typeIcons[message.message_type] || '📝') + '</span>' +
+                        deleteButton +
+                    '</div>' +
+                '</div>';
+            
+            return div;
+        }
+
+        function startPolling() {
+            if (pollingInterval) return;
+            console.log('リアルタイムメッセージ取得を開始します');
+            pollingInterval = setInterval(checkNewMessages, 2000); // 2秒間隔に短縮
+            // 初回実行
+            setTimeout(checkNewMessages, 500);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        // ==== デスクトップ用機能 ====
+        function selectMessageType(type) {
+            document.querySelectorAll('.type-btn').forEach(function(btn) {
+                btn.classList.remove('selected');
+            });
+            
+            var selectedBtn = document.querySelector('[data-type="' + type + '"]');
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+                selectedMessageType = type;
+                document.getElementById('desktopMessageType').value = type;
+            }
+        }
+
+        function selectTrainer(trainerId) {
+            document.querySelectorAll('.trainer-btn').forEach(function(btn) {
+                btn.classList.remove('selected');
+            });
+            
+            var selectedBtn = document.querySelector('[data-trainer-id="' + trainerId + '"]');
+            if (selectedBtn) {
+                selectedBtn.classList.add('selected');
+                selectedTrainerId = trainerId;
+                document.getElementById('desktopTrainerId').value = trainerId;
+            }
+        }
+
+        function insertTemplate(text) {
+            var textarea = document.getElementById('desktopContent');
+            if (textarea) {
+                var currentValue = textarea.value;
+                if (currentValue.trim() === '') {
+                    textarea.value = text;
+                } else {
+                    textarea.value = currentValue + '\n\n' + text;
+                }
+                textarea.focus();
+                textarea.scrollTop = textarea.scrollHeight;
+            }
+        }
+
+        function handleDesktopImagePreview(file) {
+            if (file && file.type.startsWith('image/')) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('desktopPreviewImg').src = e.target.result;
+                    document.getElementById('desktopImagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeDesktopImage() {
+            document.getElementById('desktopImageInput').value = '';
+            document.getElementById('desktopImagePreview').style.display = 'none';
+        }
+
+        // ==== モバイル用機能 ====
+        var selectedMobileType = 'general';
+
+        function selectMobileType(type) {
+            document.querySelectorAll('.type-option').forEach(function(option) {
+                option.classList.remove('selected');
+            });
+            
+            document.querySelector('[data-type="' + type + '"]').classList.add('selected');
+            document.getElementById('mobileMessageType').value = type;
+            selectedMobileType = type;
+            
+            updateTypeSelectionUI(type);
+            hideTypeModal();
+        }
+
+        function showTypeModal() {
+            document.getElementById('typeModal').classList.add('show');
+        }
+
+        function hideTypeModal() {
+            document.getElementById('typeModal').classList.remove('show');
+        }
+
+        function handleMobileImagePreview(file) {
+            if (file && file.type.startsWith('image/')) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('mobilePreviewImg').src = e.target.result;
+                    document.getElementById('mobileImagePreview').classList.add('show');
+                    updateImageAttachmentUI(true);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeMobileImage() {
+            document.getElementById('mobileImageInput').value = '';
+            document.getElementById('mobileImagePreview').classList.remove('show');
+            updateImageAttachmentUI(false);
+        }
+
+        function updateImageAttachmentUI(hasImage) {
+            var container = document.getElementById('mobileInputContainer');
+            var indicator = document.getElementById('imageIndicator');
+            var attachBtn = document.getElementById('attachBtn');
+            
+            if (hasImage) {
+                container.classList.add('has-image');
+                indicator.classList.add('show');
+                attachBtn.classList.add('active');
+            } else {
+                container.classList.remove('has-image');
+                indicator.classList.remove('show');
+                attachBtn.classList.remove('active');
+            }
+        }
+
+        function updateTypeSelectionUI(type) {
+            var typeBtn = document.getElementById('typeBtn');
+            var typeIndicator = document.getElementById('typeIndicator');
+            
+            var icons = {
+                'general': '📝',
+                'question': '❓',
+                'advice': '💡',
+                'encouragement': '🌟'
+            };
+            
+            typeIndicator.textContent = icons[type] || '📝';
+            typeIndicator.classList.add('show');
+            typeBtn.classList.add('has-selection');
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 60) + 'px';
+        }
+
+        function sendMobileMessage() {
+            var messageInput = document.getElementById('mobileMessageInput');
+            var content = messageInput.value.trim();
+            
+            if (!content) {
+                showMobileAlert('メッセージを入力してください', 'error');
+                messageInput.focus();
+                return;
+            }
+            
+            var sendBtn = document.getElementById('mobileSendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '⏳';
+            
+            document.getElementById('hiddenContent').value = content;
+            
+            var form = document.getElementById('mobileMessageForm');
+            var formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(function(response) {
+                if (response.ok) {
+                    sessionStorage.setItem('scrollToBottom', 'true');
+                    sessionStorage.setItem('showSuccess', 'true');
+                    window.location.reload();
+                } else {
+                    throw new Error('送信に失敗しました');
+                }
+            })
+            .catch(function(error) {
+                console.error('送信エラー:', error);
+                showMobileAlert('メッセージの送信に失敗しました', 'error');
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '➤';
+            });
+        }
+
+        function scrollToBottom() {
+            var messages = document.getElementById('mobileMessages');
+            if (messages) {
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        // ==== 共通機能 ====
+        function deleteMessage(messageId) {
+            if (!confirm('このメッセージを削除しますか？\n相手の画面では「取り消されました」と表示されます。')) {
+                return;
+            }
+            
+            // 削除中の表示
+            var messageElements = document.querySelectorAll('[data-message-id="' + messageId + '"]');
+            for (var i = 0; i < messageElements.length; i++) {
+                messageElements[i].classList.add('deleting');
+            }
+            
+            fetch('/api/messages/' + messageId + '/delete', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    recall_type: 'student_recall'  // 生徒による取り消しを示すフラグ
+                })
+            })
+            .then(function(response) { 
+                return response.json(); 
+            })
+            .then(function(data) {
+                if (data.success) {
+                    // 自分の画面からは削除
+                    for (var i = 0; i < messageElements.length; i++) {
+                        messageElements[i].style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(function(el) {
+                            return function() { 
+                                if (el.parentNode) {
+                                    el.parentNode.removeChild(el); 
+                                }
+                            };
+                        }(messageElements[i]), 300);
+                    }
+                    showAlert('メッセージを取り消しました', 'success');
+                } else {
+                    // エラー時は削除中表示を解除
+                    for (var i = 0; i < messageElements.length; i++) {
+                        messageElements[i].classList.remove('deleting');
+                    }
+                    showAlert(data.error || '削除に失敗しました', 'error');
+                }
+            })
+            .catch(function(error) {
+                // エラー時は削除中表示を解除
+                for (var i = 0; i < messageElements.length; i++) {
+                    messageElements[i].classList.remove('deleting');
+                }
+                showAlert('エラーが発生しました', 'error');
+            });
+        }
+
+        function showAlert(message, type) {
+            // デスクトップ用
+            if (window.innerWidth > 768) {
+                alert(message);
+            } else {
+                // モバイル用
+                showMobileAlert(message, type);
+            }
+        }
+
+        function showMobileAlert(message, type) {
+            var alert = document.createElement('div');
+            alert.className = 'mobile-alert ' + type;
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            
+            setTimeout(function() {
+                alert.style.animation = 'slideDown 0.3s ease reverse';
+                setTimeout(function() { 
+                    if (document.body.contains(alert)) {
+                        document.body.removeChild(alert); 
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        function handleEnterKey(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                if (event.isComposing || event.keyCode === 229) {
+                    return;
+                }
+            }
+        }
+
+        // ==== 初期化 ====
+        document.addEventListener('DOMContentLoaded', function() {
+            // デスクトップ用初期化
+            if (document.getElementById('desktopImageInput')) {
+                document.getElementById('desktopImageInput').addEventListener('change', function(e) {
+                    if (e.target.files.length > 0) {
+                        handleDesktopImagePreview(e.target.files[0]);
+                    }
+                });
+
+                document.getElementById('desktopMessageForm').addEventListener('submit', function(e) {
+                    var content = document.getElementById('desktopContent').value.trim();
+                    if (!content) {
+                        alert('メッセージ内容を入力してください。');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    var submitBtn = document.getElementById('desktopSubmitBtn');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '📤 送信中...';
+                    
+                    sessionStorage.setItem('scrollToBottom', 'true');
+                    return true;
+                });
+
+                // デフォルト選択
+                selectMessageType('general');
+                if (selectedTrainerId) {
+                    selectTrainer(selectedTrainerId);
+                }
+            }
+
+            // モバイル用初期化
+            var textarea = document.getElementById('mobileMessageInput');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    autoResize(this);
+                });
+                textarea.addEventListener('keydown', handleEnterKey);
+            }
+
+            var imageInput = document.getElementById('mobileImageInput');
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    if (e.target.files.length > 0) {
+                        handleMobileImagePreview(e.target.files[0]);
+                    }
+                });
+            }
+
+            var typeModal = document.getElementById('typeModal');
+            if (typeModal) {
+                typeModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideTypeModal();
+                    }
+                });
+            }
+
+            // 共通初期化
+            setTimeout(function() {
+                // デスクトップ用スクロール
+                var desktopMessages = document.getElementById('desktopMessagesHistory');
+                if (desktopMessages) {
+                    desktopMessages.scrollTop = desktopMessages.scrollHeight;
+                }
+                
+                // モバイル用スクロール
+                scrollToBottom();
+            }, 100);
+            
+            // 送信後のスクロール
+            if (sessionStorage.getItem('scrollToBottom') === 'true') {
+                sessionStorage.removeItem('scrollToBottom');
+                setTimeout(function() {
+                    var desktopMessages = document.getElementById('desktopMessagesHistory');
+                    if (desktopMessages) {
+                        desktopMessages.scrollTop = desktopMessages.scrollHeight;
+                    }
+                    scrollToBottom();
+                }, 200);
+            }
+            
+            // 送信成功メッセージ
+            if (sessionStorage.getItem('showSuccess') === 'true') {
+                sessionStorage.removeItem('showSuccess');
+                setTimeout(function() {
+                    showAlert('メッセージを送信しました！', 'success');
+                }, 500);
+            }
+            
+            // モバイル用タイプUI初期化
+            if (document.getElementById('typeIndicator')) {
+                updateTypeSelectionUI('general');
+            }
+            
+            // リアルタイム機能の初期化
+            lastMessageId = getLastMessageId();
+            startPolling();
+            
+            // ページ離脱時にポーリング停止
+            window.addEventListener('beforeunload', stopPolling);
+        });
+    </script>
+</body>
+</html>

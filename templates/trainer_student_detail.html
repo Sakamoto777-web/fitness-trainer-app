@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student.nickname }}さんの詳細 - トレーナーダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .student-meta {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .message-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .message-btn:hover {
+            background: linear-gradient(135deg, #e082ea 0%, #e4465b 100%);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .timeline {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .timeline-date {
+            min-width: 100px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .timeline-content {
+            flex: 1;
+            margin-left: 1rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-details {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .progress-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .progress-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .progress-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .progress-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .progress-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .meal-analysis {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .meal-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 0;
+            transition: background 0.3s ease;
+        }
+
+        .meal-item:last-child {
+            border-bottom: none;
+        }
+
+        .meal-item:hover {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0 -1rem;
+        }
+
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .meal-time {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .meal-calories {
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .meal-description {
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .insights-panel {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .insights-panel h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-item {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .insight-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-message {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-message:hover {
+            background: linear-gradient(135deg, #e082ea 0%, #e4465b 100%);
+            transform: translateY(-2px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-card h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-card p {
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        /* メッセージ統計カード */
+        .message-stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .message-stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .message-count {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .message-status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .quick-message-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .quick-message-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 健康スコア表示 */
+        .health-score {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .health-score h3 {
+            margin-bottom: 1rem;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .score-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .score-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .score-item-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .score-item-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* アラート・通知 */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background-color: #cce7ff;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        /* 未読メッセージインジケーター */
+        .unread-indicator {
+            background: #dc3545;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .progress-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+            }
+
+            .score-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 印刷スタイル */
+        @media print {
+            .header-actions,
+            .action-buttons,
+            .btn {
+                display: none;
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+
+        /* アクセシビリティ */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* フォーカス表示の改善 */
+        .btn:focus,
+        .back-btn:focus,
+        .message-btn:focus {
+            outline: 2px solid #3498db;
+            outline-offset: 2px;
+        }
+
+        /* ローディング状態 */
+        .loading {
+            position: relative;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="student-info">
+                <h1>📊 {{ student.nickname }}さんの詳細分析</h1>
+                <div class="student-meta">
+                    {% if student.age_group %}年齢層: {{ student.age_group }} | {% endif %}
+                    {% if student.height %}身長: {{ student.height }}cm | {% endif %}
+                    {% if student.target_weight %}目標体重: {{ student.target_weight }}kg{% endif %}
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('trainer_messages_page', student_id=student.id) }}" class="message-btn">
+                    💬 メッセージ <span class="unread-indicator" id="unreadBadge" style="display: none;">0</span>
+                </a>
+                <a href="{{ url_for('trainer_dashboard_page') }}" class="back-btn">
+                    ← ダッシュボードに戻る
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- フラッシュメッセージ -->
+        {% with flash_messages = get_flashed_messages(with_categories=true) %}
+            {% if flash_messages %}
+                {% for category, message in flash_messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'info' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- メッセージ統計カード -->
+        <div class="message-stats-card">
+            <div class="message-stats-header">
+                <div>
+                    <h3>💬 コミュニケーション状況</h3>
+                    <div class="message-count" id="messageCount">0</div>
+                    <small>未読メッセージ</small>
+                </div>
+                <div class="message-status" id="messageStatus">
+                    確認中...
+                </div>
+            </div>
+            <a href="{{ url_for('trainer_messages_page', student_id=student.id) }}" class="quick-message-btn">
+                📧 メッセージを送る・確認する
+            </a>
+        </div>
+
+        <!-- 健康スコア -->
+        <div class="health-score">
+            <h3>🏆 健康管理スコア</h3>
+            <div class="score-circle" id="healthScore">
+                85
+            </div>
+            <div class="score-details">
+                <div class="score-item">
+                    <div class="score-item-value" id="consistencyScore">90%</div>
+                    <div class="score-item-label">継続性</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-item-value" id="progressScore">80%</div>
+                    <div class="score-item-label">進捗</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-item-value" id="engagementScore">85%</div>
+                    <div class="score-item-label">積極性</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計概要 -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-value">{{ recent_weight_logs|length }}</span>
+                <div class="stat-label">過去30日の体重記録</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ recent_meal_logs|length }}</span>
+                <div class="stat-label">過去30日の食事記録</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">
+                    {% if recent_weight_logs %}
+                        {{ "%.1f"|format(recent_weight_logs[0].weight) }}kg
+                    {% else %}
+                        ---
+                    {% endif %}
+                </span>
+                <div class="stat-label">最新体重</div>
+            </div>
+            <div class="stat-item">
+                {% set total_calories = 0 %}
+                {% for meal in recent_meal_logs %}
+                    {% if meal.total_calories %}
+                        {% set total_calories = total_calories + meal.total_calories %}
+                    {% endif %}
+                {% endfor %}
+                <span class="stat-value">{{ total_calories }}</span>
+                <div class="stat-label">総摂取カロリー(30日)</div>
+            </div>
+        </div>
+
+        <!-- 進捗状況 -->
+        {% if recent_weight_logs and student.target_weight %}
+        <div class="progress-section">
+            <div class="progress-header">
+                <h3>🎯 目標達成状況</h3>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-item">
+                    <span class="progress-value">{{ "%.1f"|format(recent_weight_logs[0].weight) }}kg</span>
+                    <div class="progress-label">現在の体重</div>
+                </div>
+                <div class="progress-item">
+                    <span class="progress-value">{{ "%.1f"|format(student.target_weight) }}kg</span>
+                    <div class="progress-label">目標体重</div>
+                </div>
+                <div class="progress-item">
+                    <span class="progress-value">
+                        {{ "%.1f"|format((recent_weight_logs[0].weight - student.target_weight)|abs) }}kg
+                    </span>
+                    <div class="progress-label">
+                        {% if recent_weight_logs[0].weight > student.target_weight %}減量必要{% else %}増量必要{% endif %}
+                    </div>
+                </div>
+                {% if recent_weight_logs|length >= 2 %}
+                <div class="progress-item">
+                    <span class="progress-value">
+                        {% set weight_change = recent_weight_logs[0].weight - recent_weight_logs[-1].weight %}
+                        {% if weight_change > 0 %}
+                            -{{ "%.1f"|format(weight_change) }}kg
+                        {% elif weight_change < 0 %}
+                            +{{ "%.1f"|format(weight_change|abs) }}kg
+                        {% else %}
+                            ±0kg
+                        {% endif %}
+                    </span>
+                    <div class="progress-label">30日間の変化</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- AI分析とおすすめ -->
+        <div class="insights-panel">
+            <h3>🤖 AI分析結果</h3>
+            {% if recent_weight_logs %}
+                {% if recent_weight_logs|length >= 2 %}
+                    {% set weight_change = recent_weight_logs[0].weight - recent_weight_logs[-1].weight %}
+                    <div class="insight-item">
+                        <strong>体重の変化傾向:</strong>
+                        {% if weight_change > 0 %}
+                            過去30日で{{ "%.1f"|format(weight_change) }}kg減少しています。良いペースです！
+                        {% elif weight_change < 0 %}
+                            過去30日で{{ "%.1f"|format(weight_change|abs) }}kg増加しています。食事内容を見直しましょう。
+                        {% else %}
+                            体重は安定しています。現在の生活習慣を維持しましょう。
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                {% if recent_meal_logs %}
+                    {% set total_meals = recent_meal_logs|length %}
+                    {% set total_calories = 0 %}
+                    {% set meal_count = 0 %}
+                    {% for meal in recent_meal_logs %}
+                        {% if meal.total_calories %}
+                            {% set total_calories = total_calories + meal.total_calories %}
+                            {% set meal_count = meal_count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if meal_count > 0 %}
+                        {% set avg_calories = total_calories / meal_count %}
+                        <div class="insight-item">
+                            <strong>食事分析:</strong>
+                            平均摂取カロリーは{{ "%.0f"|format(avg_calories) }}kcal/食です。
+                            {% if avg_calories > 800 %}
+                                カロリーが高めです。量を調整することをお勧めします。
+                            {% elif avg_calories < 300 %}
+                                カロリーが少なめです。栄養バランスに注意してください。
+                            {% else %}
+                                適切なカロリー摂取量です。
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="insight-item">
+                        <strong>記録頻度:</strong>
+                        過去30日で{{ total_meals }}回の食事記録があります。
+                        {% if total_meals >= 60 %}
+                            素晴らしい継続力です！
+                        {% elif total_meals >= 30 %}
+                            良いペースで記録されています。
+                        {% else %}
+                            記録頻度を上げることをお勧めします。
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="insight-item">
+                    まだ十分なデータがありません。継続的な記録をお勧めします。
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- メインダッシュボード -->
+        <div class="dashboard-grid">
+            <!-- 体重グラフ -->
+            <div class="card">
+                <h2>📈 体重推移グラフ</h2>
+                {% if recent_weight_logs %}
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <h3>体重データがありません</h3>
+                        <p>生徒に体重記録を促してください</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- 最近の記録 -->
+            <div class="card">
+                <h2>📝 最近の記録</h2>
+                <div class="timeline">
+                    {% set all_logs = [] %}
+                    {% for log in recent_weight_logs %}
+                        {% set _ = all_logs.append(('weight', log.log_date, log)) %}
+                    {% endfor %}
+                    {% for log in recent_meal_logs %}
+                        {% set _ = all_logs.append(('meal', log.meal_datetime.date(), log)) %}
+                    {% endfor %}
+                    
+                    {% if all_logs %}
+                        {% set sorted_logs = all_logs|sort(attribute='1', reverse=true) %}
+                        {% for log_type, log_date, log in sorted_logs[:10] %}
+                            <div class="timeline-item">
+                                <div class="timeline-date">{{ log_date.strftime('%m/%d') }}</div>
+                                <div class="timeline-content">
+                                    {% if log_type == 'weight' %}
+                                        <div class="timeline-title">⚖️ 体重記録</div>
+                                        <div class="timeline-details">
+                                            {{ log.weight }}kg
+                                            {% if log.body_fat_percentage %} (体脂肪率: {{ log.body_fat_percentage }}%){% endif %}
+                                        </div>
+                                    {% elif log_type == 'meal' %}
+                                        <div class="timeline-title">🍽️ 食事記録</div>
+                                        <div class="timeline-details">
+                                            {{ log.meal_datetime.strftime('%H:%M') }}
+                                            {% if log.total_calories %} - {{ log.total_calories }}kcal{% endif %}
+                                            {% if log.description %}<br>{{ log.description[:50] }}{% if log.description|length > 50 %}...{% endif %}{% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <h3>記録がありません</h3>
+                            <p>生徒に記録を促してください</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 食事分析 -->
+        <div class="meal-analysis">
+            <h2>🍽️ 食事内容分析</h2>
+            {% if recent_meal_logs %}
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for meal in recent_meal_logs[:15] %}
+                        <div class="meal-item">
+                            <div class="meal-header">
+                                <div class="meal-time">
+                                    {{ meal.meal_datetime.strftime('%m/%d %H:%M') }}
+                                    {% if meal.meal_type %}
+                                        {% if meal.meal_type == 'morning' %}🌅 朝食
+                                        {% elif meal.meal_type == 'lunch' %}🌞 昼食
+                                        {% elif meal.meal_type == 'dinner' %}🌙 夕食
+                                        {% elif meal.meal_type == 'snack1' %}🍪 間食1
+                                        {% elif meal.meal_type == 'snack2' %}🍎 間食2
+                                        {% elif meal.meal_type == 'snack3' %}🥨 間食3
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                {% if meal.total_calories %}
+                                    <div class="meal-calories">{{ meal.total_calories }}kcal</div>
+                                {% endif %}
+                            </div>
+                            {% if meal.description %}
+                                <div class="meal-description">{{ meal.description }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h3>食事記録がありません</h3>
+                    <p>生徒に食事記録を促してください</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- おすすめアクション -->
+        <div class="recommendation-card">
+            <h4>💡 トレーナーからのおすすめアクション</h4>
+            {% if recent_weight_logs|length == 0 %}
+                <p>体重記録を開始するよう生徒に声をかけましょう。定期的な測定が成功の鍵です。</p>
+            {% elif recent_meal_logs|length == 0 %}
+                <p>食事記録を始めるよう促しましょう。食事内容の把握は体重管理の重要な要素です。</p>
+            {% elif recent_weight_logs and student.target_weight %}
+                {% set current_weight = recent_weight_logs[0].weight %}
+                {% if current_weight > student.target_weight %}
+                    <p>目標体重まであと{{ "%.1f"|format(current_weight - student.target_weight) }}kgです。有酸素運動と食事管理のバランスを見直しましょう。</p>
+                {% elif current_weight < student.target_weight %}
+                    <p>目標体重まであと{{ "%.1f"|format(student.target_weight - current_weight) }}kgです。筋力トレーニングとタンパク質摂取を増やしましょう。</p>
+                {% else %}
+                    <p>目標体重を達成しています！現在の生活習慣を維持し、新しい目標設定を検討しましょう。</p>
+                {% endif %}
+            {% else %}
+                <p>継続的な記録を褒めて、モチベーション維持をサポートしましょう。</p>
+            {% endif %}
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="action-buttons">
+            <a href="{{ url_for('trainer_messages_page', student_id=student.id) }}" class="btn btn-message">
+                💬 メッセージを送る
+            </a>
+            <a href="mailto:{{ student.email }}" class="btn btn-primary">
+                📧 生徒にメール送信
+            </a>
+            <a href="{{ url_for('trainer_dashboard_page') }}" class="btn btn-primary">
+                📊 他の生徒を確認
+            </a>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        // 未読メッセージ数を取得
+        async function loadUnreadCount() {
+            try {
+                const response = await fetch('/trainer/get_unread_count/{{ student.id }}');
+                const data = await response.json();
+                const unreadCount = data.count;
+                
+                const badge = document.getElementById('unreadBadge');
+                const messageCount = document.getElementById('messageCount');
+                const messageStatus = document.getElementById('messageStatus');
+                
+                if (unreadCount > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount.toString();
+                    messageCount.textContent = unreadCount;
+                    messageStatus.textContent = `${unreadCount}件の未読メッセージ`;
+                    messageStatus.style.background = 'rgba(220, 53, 69, 0.8)';
+                } else {
+                    badge.style.display = 'none';
+                    messageCount.textContent = '0';
+                    messageStatus.textContent = '未読メッセージなし';
+                    messageStatus.style.background = 'rgba(40, 167, 69, 0.8)';
+                }
+            } catch (error) {
+                console.error('未読数の取得に失敗:', error);
+                document.getElementById('messageStatus').textContent = '取得エラー';
+            }
+        }
+
+        // 健康スコアを計算
+        function calculateHealthScore() {
+            const weightLogsCount = {{ recent_weight_logs|length }};
+            const mealLogsCount = {{ recent_meal_logs|length }};
+            
+            // 継続性スコア（記録頻度based）
+            const consistencyScore = Math.min(100, (weightLogsCount / 30) * 100);
+            
+            // 進捗スコア（目標に対する進捗）
+            let progressScore = 75; // デフォルト値
+            {% if recent_weight_logs and student.target_weight %}
+                {% set current_weight = recent_weight_logs[0].weight %}
+                {% set target_weight = student.target_weight %}
+                {% if recent_weight_logs|length >= 2 %}
+                    {% set weight_change = recent_weight_logs[0].weight - recent_weight_logs[-1].weight %}
+                    {% if (current_weight > target_weight and weight_change > 0) or (current_weight < target_weight and weight_change < 0) %}
+                        progressScore = Math.min(100, 85 + {{ weight_change|abs }} * 5);
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+            
+            // 積極性スコア（食事記録頻度based）
+            const engagementScore = Math.min(100, (mealLogsCount / 60) * 100);
+            
+            // 総合スコア
+            const overallScore = Math.round((consistencyScore + progressScore + engagementScore) / 3);
+            
+            // UI更新
+            document.getElementById('healthScore').textContent = overallScore;
+            document.getElementById('consistencyScore').textContent = Math.round(consistencyScore) + '%';
+            document.getElementById('progressScore').textContent = Math.round(progressScore) + '%';
+            document.getElementById('engagementScore').textContent = Math.round(engagementScore) + '%';
+            
+            // スコアに基づく色変更
+            const scoreElement = document.getElementById('healthScore').parentElement;
+            if (overallScore >= 80) {
+                scoreElement.style.background = 'linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%)';
+            } else if (overallScore >= 60) {
+                scoreElement.style.background = 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)';
+            } else {
+                scoreElement.style.background = 'linear-gradient(135deg, #e74c3c 0%, #f39c12 100%)';
+            }
+        }
+
+        // 体重グラフの描画
+        {% if recent_weight_logs %}
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            
+            // データの準備（日付文字列とラベルを分けて作成）
+            const labels = [
+                {% for log in recent_weight_logs|reverse %}
+                '{{ log.log_date.strftime("%m/%d") }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+            
+            const weightValues = [
+                {% for log in recent_weight_logs|reverse %}
+                {{ log.weight }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const datasets = [{
+                label: '体重 (kg)',
+                data: weightValues,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#3498db',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                borderWidth: 3
+            }];
+
+            {% if student.target_weight %}
+            // 目標体重ラインを追加
+            const targetData = Array(weightValues.length).fill({{ student.target_weight }});
+            datasets.push({
+                label: '目標体重',
+                data: targetData,
+                borderColor: '#e74c3c',
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                pointHoverRadius: 0,
+                borderWidth: 2
+            });
+            {% endif %}
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#3498db',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + 'kg';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                maxTicksLimit: 8
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                callback: function(value) {
+                                    return value + 'kg';
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: '#3498db',
+                            hoverBorderColor: '#fff',
+                            hoverBorderWidth: 3
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+            // デバッグ用コンソール出力
+            console.log('Chart initialized with data:', {
+                labels: labels,
+                weightValues: weightValues,
+                datasets: datasets.length
+            });
+        });
+        {% else %}
+        // データがない場合のメッセージ
+        console.log('No weight data available for chart');
+        {% endif %}
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 未読数を読み込み
+            loadUnreadCount();
+            
+            // 健康スコアを計算
+            calculateHealthScore();
+            
+            // 5分ごとに未読数を更新
+            setInterval(loadUnreadCount, 300000);
+            
+            // アニメーション効果
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // 各カードにアニメーションを適用
+            document.querySelectorAll('.card, .stat-item, .insights-panel').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        });
+
+        // エラーハンドリング
+        window.addEventListener('error', function(e) {
+            console.error('生徒詳細ページエラー:', e);
+        });
+    </script>
+</body>
+</html>

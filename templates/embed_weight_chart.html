@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student_nickname }}さんの体重推移</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-widget {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            color: #333;
+        }
+
+        .widget-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .widget-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .widget-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1.5rem;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .powered-by {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .powered-by a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .powered-by a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: #dc3545;
+        }
+
+        .success-badge {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .chart-widget {
+                padding: 1rem;
+            }
+            
+            .widget-title {
+                font-size: 1.25rem;
+            }
+            
+            .stats-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        /* 埋め込み用の最小化スタイル */
+        .embed-mode {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: none;
+        }
+
+        .embed-mode .widget-header {
+            margin-bottom: 1rem;
+        }
+
+        .embed-mode .widget-title {
+            font-size: 1.1rem;
+        }
+
+        .embed-mode .chart-container {
+            height: 200px;
+        }
+
+        .embed-mode .stats-row {
+            margin-top: 1rem;
+            padding: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-widget" id="chartWidget">
+        <div class="widget-header">
+            <h2 class="widget-title">📊 {{ student_nickname }}さんの体重推移</h2>
+            <p class="widget-subtitle">健康管理の成果をご覧ください</p>
+        </div>
+
+        <div id="loadingState" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>データを読み込み中...</p>
+        </div>
+
+        <div id="chartContent" style="display: none;">
+            <div class="chart-container">
+                <canvas id="weightChart"></canvas>
+            </div>
+
+            <div class="stats-row" id="statsRow">
+                <div class="stat-item">
+                    <div class="stat-value" id="latestWeight">---</div>
+                    <div class="stat-label">最新体重</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="recordCount">---</div>
+                    <div class="stat-label">記録回数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="weeklyChange">---</div>
+                    <div class="stat-label">週間変化</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <div class="success-badge">
+                    ✨ 継続的な記録で健康管理中！
+                </div>
+            </div>
+        </div>
+
+        <div id="errorState" class="error-state" style="display: none;">
+            <p>❌ データの読み込みに失敗しました</p>
+            <p>しばらく時間をおいてから再度お試しください</p>
+        </div>
+
+        <div class="powered-by">
+            Powered by <a href="#" target="_parent">健康管理アプリ</a>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        let weightChart = null;
+
+        // データ読み込み
+        async function loadWeightData() {
+            try {
+                const response = await fetch('/get_public_weight_data/{{ student_id }}');
+                
+                if (!response.ok) {
+                    throw new Error('データの取得に失敗しました');
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('データ読み込みエラー:', error);
+                throw error;
+            }
+        }
+
+        // グラフを描画
+        function renderChart(data) {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            
+            // データポイントの準備
+            const chartData = data.labels.map((label, index) => ({
+                x: label,
+                y: data.data[index]
+            }));
+
+            weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: '体重 (kg)',
+                        data: chartData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#667eea',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const date = new Date(context[0].label);
+                                    return date.toLocaleDateString('ja-JP', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    });
+                                },
+                                label: function(context) {
+                                    return `体重: ${context.parsed.y}kg`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MM/DD'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                maxTicksLimit: 6
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                callback: function(value) {
+                                    return value + 'kg';
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: '#667eea',
+                            hoverBorderColor: '#fff'
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        // 統計情報を更新
+        function updateStats(data) {
+            const latestWeight = data.data[data.data.length - 1];
+            const recordCount = data.data.length;
+            
+            // 週間変化を計算
+            let weeklyChange = '---';
+            if (data.data.length >= 2) {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                
+                let weekAgoWeight = null;
+                for (let i = data.labels.length - 1; i >= 0; i--) {
+                    const recordDate = new Date(data.labels[i]);
+                    if (recordDate <= sevenDaysAgo) {
+                        weekAgoWeight = data.data[i];
+                        break;
+                    }
+                }
+                
+                if (weekAgoWeight !== null) {
+                    const change = latestWeight - weekAgoWeight;
+                    weeklyChange = (change >= 0 ? '+' : '') + change.toFixed(1) + 'kg';
+                }
+            }
+
+            document.getElementById('latestWeight').textContent = latestWeight.toFixed(1) + 'kg';
+            document.getElementById('recordCount').textContent = recordCount + '回';
+            document.getElementById('weeklyChange').textContent = weeklyChange;
+        }
+
+        // アニメーション付きで表示状態を切り替え
+        function showContent() {
+            document.getElementById('loadingState').style.display = 'none';
+            const content = document.getElementById('chartContent');
+            content.style.display = 'block';
+            content.style.opacity = '0';
+            
+            setTimeout(() => {
+                content.style.transition = 'opacity 0.5s ease-in';
+                content.style.opacity = '1';
+            }, 100);
+        }
+
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        // 埋め込みモード検出
+        function detectEmbedMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('embed') === 'true' || window.self !== window.top) {
+                document.body.style.background = 'transparent';
+                document.getElementById('chartWidget').classList.add('embed-mode');
+            }
+        }
+
+        // 初期化
+        async function initialize() {
+            detectEmbedMode();
+            
+            try {
+                // データを読み込み
+                const data = await loadWeightData();
+                
+                if (data.data.length === 0) {
+                    throw new Error('データがありません');
+                }
+                
+                // グラフと統計を更新
+                renderChart(data);
+                updateStats(data);
+                
+                // コンテンツを表示
+                showContent();
+                
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                showError();
+            }
+        }
+
+        // ページ読み込み完了後に初期化
+        document.addEventListener('DOMContentLoaded', initialize);
+
+        // ウィンドウリサイズ時のグラフ調整
+        window.addEventListener('resize', () => {
+            if (weightChart) {
+                weightChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>
