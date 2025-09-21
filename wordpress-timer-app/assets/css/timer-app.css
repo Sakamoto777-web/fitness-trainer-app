@@ -1,0 +1,150 @@
+.fitness-timer {
+    border: 2px solid #1f2933;
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: #0f172a;
+    color: #f8fafc;
+    max-width: 420px;
+    margin: 1.5rem auto;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.35);
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+.fitness-timer__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.fitness-timer__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.fitness-timer__mode {
+    font-size: 0.875rem;
+    color: #a5b4fc;
+}
+
+.fitness-timer__display {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1em;
+}
+
+.fitness-timer__controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.fitness-timer__btn {
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #f8fafc;
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.35);
+}
+
+.fitness-timer__btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
+    transform: none;
+}
+
+.fitness-timer__btn:not(:disabled):hover {
+    transform: translateY(-1px) scale(1.01);
+}
+
+.fitness-timer__btn--reset {
+    background: #475569;
+    box-shadow: none;
+}
+
+.fitness-timer__btn--lap {
+    background: #22d3ee;
+    color: #0f172a;
+}
+
+.fitness-timer__laps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    max-height: 160px;
+    overflow-y: auto;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.fitness-timer__laps li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    font-size: 0.95rem;
+}
+
+.fitness-timer__interval-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+}
+
+.fitness-timer__interval {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.fitness-timer__interval--active {
+    background: rgba(14, 165, 233, 0.25);
+    transform: translateX(4px);
+}
+
+.fitness-timer__notes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fitness-timer__notes textarea {
+    min-height: 90px;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: rgba(15, 23, 42, 0.75);
+    color: #f8fafc;
+    padding: 0.75rem;
+    resize: vertical;
+}
+
+.fitness-timer__notes textarea:focus {
+    outline: 2px solid #38bdf8;
+    border-color: transparent;
+}
+
+@media (max-width: 480px) {
+    .fitness-timer {
+        padding: 1.25rem;
+    }
+
+    .fitness-timer__display {
+        font-size: 2.5rem;
+    }
+
+    .fitness-timer__controls {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
